@@ -9,3 +9,4 @@ app = FastAPI(title="Game Service API")
 
 # Include game routes
 app.include_router(game.router)
+
