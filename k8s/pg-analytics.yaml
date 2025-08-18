@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pg-analytics
+  labels:
+    app: pg-analytics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pg-analytics
+  template:
+    metadata:
+      labels:
+        app: pg-analytics
+    spec:
+      containers:
+        - name: pg-analytics
+          image: postgres:14
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: POSTGRES_DB
+              value: analytics_db
+          volumeMounts:
+            - name: pg-analytics-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: pg-analytics-storage
+          emptyDir: {}  # For persistence, replace with PVC
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pg-analytics
+spec:
+  selector:
+    app: pg-analytics
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

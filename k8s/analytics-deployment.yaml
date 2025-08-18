@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analytics-service
+  template:
+    metadata:
+      labels:
+        app: analytics-service
+    spec:
+      containers:
+        - name: analytics-service
+          image: sabesan98/analytics-service:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DB_USER
+              value: "postgres"
+            - name: DB_PASSWORD
+              value: "postgres"
+            - name: DB_HOST
+              value: "pg-analytics"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: "analytics_db"
+          command: ["/bin/sh"]
+          args:
+            - -c
+            - |
+              echo "Waiting for PostgreSQL to be ready..."
+              until pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USER; do
+                sleep 2
+              done
+              echo "PostgreSQL is up! Starting service..."
+              uvicorn main:app --host 0.0.0.0 --port 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-service
+spec:
+  selector:
+    app: analytics-service
+  type: NodePort
+  ports:
+    - port: 8000
+      targetPort: 8000
+      nodePort: 30002

@@ -1,0 +1,91 @@
+version: "3.8"
+
+services:
+  # ---------------- Game Service ----------------
+  pg-games:
+    image: postgres:14
+    container_name: pg-games
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: games_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - games_data:/var/lib/postgresql/data
+
+  game-service:
+    build:
+      context: ./game-service
+    container_name: game-service
+    depends_on:
+      - pg-games
+    ports:
+      - "8000:8000"
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: pg-games
+      DB_PORT: 5432
+      DB_NAME: games_db
+
+  # ---------------- Order Service ----------------
+  pg-orders:
+    image: postgres:14
+    container_name: pg-orders
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: orders_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - orders_data:/var/lib/postgresql/data
+
+  order-service:
+    build:
+      context: ./order-service
+    container_name: order-service
+    depends_on:
+      - pg-orders
+    ports:
+      - "8001:8000"
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: pg-orders
+      DB_PORT: 5432
+      DB_NAME: orders_db
+
+  # ---------------- Analytics Service ----------------
+  pg-analytics:
+    image: postgres:14
+    container_name: pg-analytics
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: analytics_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - analytics_data:/var/lib/postgresql/data
+
+  analytics-service:
+    build:
+      context: ./analytics-service
+    container_name: analytics-service
+    depends_on:
+      - pg-analytics
+    ports:
+      - "8002:8000"
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: pg-analytics
+      DB_PORT: 5432
+      DB_NAME: analytics_db
+
+volumes:
+  games_data:
+  orders_data:
+  analytics_data:

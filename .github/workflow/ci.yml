@@ -1,0 +1,49 @@
+name: CI - Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - main   # Run when you push to main
+  pull_request:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Game Service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./game-service
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/game-service:latest
+
+      - name: Build and Push Order Service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./order-service
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/order-service:latest
+
+      - name: Build and Push Analytics Service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./analytics-service
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/analytics-service:latest
+
+      - name: Build and Push Frontend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
